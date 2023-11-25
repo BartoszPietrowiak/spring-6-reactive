@@ -23,7 +23,7 @@ class CustomerControllerTest {
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-type", "application/json")
-                .expectBody().jsonPath("$.size()").isEqualTo(3);
+                .expectBody().jsonPath("$.size()").isEqualTo(4);
     }
 
     @Test
@@ -33,6 +33,13 @@ class CustomerControllerTest {
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-type", "application/json")
                 .expectBody(CustomerDTO.class);
+    }
+
+    @Test
+    void getCustomerByIdNotFound() {
+        webTestClient.get().uri(CustomerController.CUSTOMER_BY_ID_PATH, 999)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     @Test
@@ -46,6 +53,17 @@ class CustomerControllerTest {
     }
 
     @Test
+    void saveNewCustomerBadData() {
+        CustomerDTO testCustomer = getCustomerDto();
+        testCustomer.setName("");
+        webTestClient.post().uri(CustomerController.CUSTOMER_PATH)
+                .body(Mono.just(testCustomer), CustomerDTO.class)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
     void updateCustomer() {
         webTestClient.put().uri(CustomerController.CUSTOMER_BY_ID_PATH, 1)
                 .body(Mono.just(getCustomerDto()), CustomerDTO.class)
@@ -55,11 +73,38 @@ class CustomerControllerTest {
     }
 
     @Test
+    void updateCustomerBadData() {
+        CustomerDTO testCustomer = getCustomerDto();
+        testCustomer.setName("");
+        webTestClient.put().uri(CustomerController.CUSTOMER_BY_ID_PATH, 1)
+                .body(Mono.just(testCustomer), CustomerDTO.class)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
+    void updateCustomerNotFound() {
+        webTestClient.put().uri(CustomerController.CUSTOMER_BY_ID_PATH, 999)
+                .body(Mono.just(getCustomerDto()), CustomerDTO.class)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+    @Test
     void deleteCustomer() {
         webTestClient.delete().uri(CustomerController.CUSTOMER_BY_ID_PATH, 1)
                 .header("Content-Type", "application/json")
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    void deleteCustomerNotFound() {
+        webTestClient.delete().uri(CustomerController.CUSTOMER_BY_ID_PATH, 999)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     private CustomerDTO getCustomerDto() {

@@ -42,6 +42,14 @@ class BeerControllerTest {
     }
 
     @Test
+    @Order(1)
+    void getBeerByIdNotFound() {
+        webTestClient.get().uri(BeerController.BEER_BY_ID_PATH, 999)
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
     @Order(3)
     void saveNewBeer() {
         webTestClient.post().uri(BeerController.BEER_PATH)
@@ -50,6 +58,19 @@ class BeerControllerTest {
                 .exchange()
                 .expectStatus().isCreated()
                 .expectHeader().location("http://localhost:8080/api/v2/beer/4");
+    }
+
+    @Test
+    @Order(3)
+    void saveNewBeerBadData() {
+        BeerDTO testBeer = getBeerDto();
+        testBeer.setBeerName("");
+
+        webTestClient.post().uri(BeerController.BEER_PATH)
+                .body(Mono.just(testBeer), BeerDTO.class)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
     }
 
     @Test
@@ -63,12 +84,43 @@ class BeerControllerTest {
     }
 
     @Test
+    @Order(4)
+    void updateBeerNotFound() {
+        webTestClient.put().uri(BeerController.BEER_BY_ID_PATH, 999)
+                .body(Mono.just(getBeerDto()), BeerDTO.class)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
+    }
+
+    @Test
+    @Order(4)
+    void updateBeerBadData() {
+        BeerDTO testBeer = getBeerDto();
+        testBeer.setBeerStyle("");
+        webTestClient.put().uri(BeerController.BEER_BY_ID_PATH, 1)
+                .body(Mono.just(testBeer), BeerDTO.class)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isBadRequest();
+    }
+
+    @Test
     @Order(999)
     void deleteBeer() {
         webTestClient.delete().uri(BeerController.BEER_BY_ID_PATH, 1)
                 .header("Content-Type", "application/json")
                 .exchange()
                 .expectStatus().isNoContent();
+    }
+
+    @Test
+    @Order(999)
+    void deleteBeerNotFound() {
+        webTestClient.delete().uri(BeerController.BEER_BY_ID_PATH, 999)
+                .header("Content-Type", "application/json")
+                .exchange()
+                .expectStatus().isNotFound();
     }
 
     private BeerDTO getBeerDto() {
