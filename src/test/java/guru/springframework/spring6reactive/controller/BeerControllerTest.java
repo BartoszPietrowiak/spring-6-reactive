@@ -13,6 +13,8 @@ import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
 
+import static org.springframework.security.test.web.reactive.server.SecurityMockServerConfigurers.mockOAuth2Login;
+
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @SpringBootTest
 @AutoConfigureWebTestClient
@@ -24,7 +26,9 @@ class BeerControllerTest {
     @Test
     @Order(2)
     void listBeers() {
-        webTestClient.get().uri(BeerController.BEER_PATH)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .get().uri(BeerController.BEER_PATH)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-type", "application/json")
@@ -34,7 +38,9 @@ class BeerControllerTest {
     @Test
     @Order(1)
     void getBeerById() {
-        webTestClient.get().uri(BeerController.BEER_BY_ID_PATH, 1)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .get().uri(BeerController.BEER_BY_ID_PATH, 1)
                 .exchange()
                 .expectStatus().isOk()
                 .expectHeader().valueEquals("Content-type", "application/json")
@@ -44,7 +50,9 @@ class BeerControllerTest {
     @Test
     @Order(1)
     void getBeerByIdNotFound() {
-        webTestClient.get().uri(BeerController.BEER_BY_ID_PATH, 999)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .get().uri(BeerController.BEER_BY_ID_PATH, 999)
                 .exchange()
                 .expectStatus().isNotFound();
     }
@@ -52,7 +60,9 @@ class BeerControllerTest {
     @Test
     @Order(3)
     void saveNewBeer() {
-        webTestClient.post().uri(BeerController.BEER_PATH)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .post().uri(BeerController.BEER_PATH)
                 .body(Mono.just(getBeerDto()), BeerDTO.class)
                 .header("Content-Type", "application/json")
                 .exchange()
@@ -66,7 +76,9 @@ class BeerControllerTest {
         BeerDTO testBeer = getBeerDto();
         testBeer.setBeerName("");
 
-        webTestClient.post().uri(BeerController.BEER_PATH)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .post().uri(BeerController.BEER_PATH)
                 .body(Mono.just(testBeer), BeerDTO.class)
                 .header("Content-Type", "application/json")
                 .exchange()
@@ -76,7 +88,9 @@ class BeerControllerTest {
     @Test
     @Order(4)
     void updateBeer() {
-        webTestClient.put().uri(BeerController.BEER_BY_ID_PATH, 1)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .put().uri(BeerController.BEER_BY_ID_PATH, 1)
                 .body(Mono.just(getBeerDto()), BeerDTO.class)
                 .header("Content-Type", "application/json")
                 .exchange()
@@ -86,7 +100,9 @@ class BeerControllerTest {
     @Test
     @Order(4)
     void updateBeerNotFound() {
-        webTestClient.put().uri(BeerController.BEER_BY_ID_PATH, 999)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .put().uri(BeerController.BEER_BY_ID_PATH, 999)
                 .body(Mono.just(getBeerDto()), BeerDTO.class)
                 .header("Content-Type", "application/json")
                 .exchange()
@@ -98,7 +114,9 @@ class BeerControllerTest {
     void updateBeerBadData() {
         BeerDTO testBeer = getBeerDto();
         testBeer.setBeerStyle("");
-        webTestClient.put().uri(BeerController.BEER_BY_ID_PATH, 1)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .put().uri(BeerController.BEER_BY_ID_PATH, 1)
                 .body(Mono.just(testBeer), BeerDTO.class)
                 .header("Content-Type", "application/json")
                 .exchange()
@@ -108,7 +126,9 @@ class BeerControllerTest {
     @Test
     @Order(999)
     void deleteBeer() {
-        webTestClient.delete().uri(BeerController.BEER_BY_ID_PATH, 1)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .delete().uri(BeerController.BEER_BY_ID_PATH, 1)
                 .header("Content-Type", "application/json")
                 .exchange()
                 .expectStatus().isNoContent();
@@ -117,7 +137,9 @@ class BeerControllerTest {
     @Test
     @Order(999)
     void deleteBeerNotFound() {
-        webTestClient.delete().uri(BeerController.BEER_BY_ID_PATH, 999)
+        webTestClient
+                .mutateWith(mockOAuth2Login())
+                .delete().uri(BeerController.BEER_BY_ID_PATH, 999)
                 .header("Content-Type", "application/json")
                 .exchange()
                 .expectStatus().isNotFound();
